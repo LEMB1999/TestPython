@@ -3,11 +3,18 @@
 
 
 def fibonacci(number):
+
+    if not isinstance(number,int):
+        return "{0} is not a number".format(number)
+
+    if number <= 0:
+        return "the number must be greater than 0"
+
     result = []
-    if number == 0:
+    if number == 1:
         result = [0]
-    elif number == 1:
-        result = [1]
+    elif number == 2:
+        result = [0,1]
     elif number >= 3:
         result = [0,1]
         for i in range( 0 , number - 2 ):
@@ -15,5 +22,5 @@ def fibonacci(number):
 
     return result
 
-print(fibonacci(10))
+#fibonacci(10)
         

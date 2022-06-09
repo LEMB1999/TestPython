@@ -5,8 +5,13 @@ def toLowerCase(word):
     return word.lower()
 
 def countWords(phrase,case_sensitive=False):
+
+    if not isinstance(phrase,str):
+        return "the {0} is not a string".format(phrase)
+
     if(len(phrase) == 0):
-        return 0
+        return {}
+
     words = phrase.split()
 
     if not case_sensitive:
@@ -17,5 +22,5 @@ def countWords(phrase,case_sensitive=False):
         count_words[word] = (count_words.get(word) or 0 ) + 1  
     return count_words
 
-phrase = input()
-print(countWords(phrase,True))
+#phrase = input()
+#print(countWords(phrase,True))
