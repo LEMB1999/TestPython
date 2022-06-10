@@ -30,8 +30,6 @@ def login():
                 "message":"the credentials are incorrect"
             })
         
-
-
 @app.route("/logout",methods=["DELETE"])
 def logout():
     session.pop('info',default=None)
