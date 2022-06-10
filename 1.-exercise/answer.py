@@ -1,11 +1,10 @@
 #Luis Emmanuel Mendez Barrios
 #2022/06/08
 
-from sqlalchemy import Integer
-
-
+#this function check if the number pass as param is multiple of 5 or 3 or both
 def checkNumber(number):
 
+    #validate that the number pass in function is a number
     if not isinstance(number,int):
         return "{0} is not a number".format(number)
 
@@ -18,6 +17,9 @@ def checkNumber(number):
     else:
         return number
 
+#this function displays a list of numbers depending on the value show a fizz , buzz , fizz buzz or a number
+# start ->  the start number of the list
+# end   ->  the end   number of the list
 def displayNumbers(start,end):
     for number in range( start , end + 1 ):
        checkNumber(number)

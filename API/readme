@@ -1,8 +1,0 @@
-
-
-#Correr el archivo migration.py para crear las tablas en la base de datos
-
-#pip install flask
-#pip install sqlalchemy
-#pip install flask_bcrypt
-#pip install psycopg2

@@ -1,6 +1,7 @@
 from answer import *
 
-def checkCountWords():
+#verify the diferentes phrase and count his words
+def test_CountWords():
     cases = [
         {"input":"Hola hola como estas", "case_sensitive":True , "result" : {"Hola":1,"hola":1 , "como":1, "estas":1}},
         {"input":"Hola hola como estas", "case_sensitive":False , "result" : {"hola":2,"como":1, "estas":1}},
@@ -13,14 +14,12 @@ def checkCountWords():
     for case in cases:
         assert countWords(case["input"],case["case_sensitive"]) == case["result"]
 
-def checkInvalidInput():
+#verify if user does not pass a string to function
+def test_InvalidInput():
     assert countWords(1) == "the 1 is not a string"
 
-def checkEmptyInput():
+#verify if user send a empty string
+def test_EmptyInput():
     assert countWords("") == {}
 
-def test_answer():
-    checkCountWords()
-    checkInvalidInput()
-    checkEmptyInput()
 

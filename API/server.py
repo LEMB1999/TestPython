@@ -1,16 +1,24 @@
+#import Environment Variables
+from env import *
+
 from flask import Flask,jsonify,request,session
 from sqlalchemy.orm import Session 
 from sqlalchemy import create_engine,update,delete,select
 from models import *
 from datetime import datetime
+#we use flask_bcrypt to encrypt the password 
 from flask_bcrypt import Bcrypt
 
-engine = create_engine('postgresql+psycopg2://postgres:IbFNAn1VCuTyBlP@localhost:3306/API_INFO')
+engine = create_engine(CONNECTION_URL_DATABASE)
 
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
-app.config['SECRET_KEY'] = "ZQhLWRGpV2Zfcr8"
 
+#configure startup app
+bcrypt = Bcrypt(app)
+app.config['SECRET_KEY'] = KEY_COOKIES
+
+
+#------------ Auth ------------------#
 
 @app.route("/login",methods=["POST"])
 def login():
@@ -32,45 +40,55 @@ def login():
         
 @app.route("/logout",methods=["DELETE"])
 def logout():
-    session.pop('info',default=None)
+    session.pop('user',default=None)
     return jsonify({
         "message":"See you"
     })
 
 
+#----------------------- Auth ------------------#
+
+
+#----------------------- User ------------------#
+
 @app.route("/users",methods=["GET"])
 def getUsers():
-    if "info" in session and session["info"].role == "admin":
+    print(session)
+    if "user" in session and session["user"]["role"] == "admin":
         with Session(engine) as conn:
             users = conn.execute(select(User.email, User.first_name,User.last_name)).all()
             users = [ {"email":user[0],"first_name":user[1],"last_name":user[2]} for user in users ]
         return jsonify({
+            "status":200,
             "users": users
         })
     else:
         return jsonify({
+            "status": 401,
             "message": "Unauthorized request"
         })
 
 @app.route("/user/<int:id_user>",methods=["GET"])
 def getUser(id_user):
-    if "user" in session and session["user"].role == "admin":
+    if "user" in session and session["user"]["role"] == "admin":
         with Session(engine) as conn:
             user = conn.execute(
                 select(User).where(User.id == id_user)
             ).fetchone()
             
         return jsonify({
+            "status":200,
             "user":user[0].serialize()
         })
     else:
         return jsonify({
+            "status":401,
             "message": "Unauthorized request"
         })
 
 @app.route("/user",methods=["POST"])
 def addUser():
-    if "user" in session and session["user"].role == "admin":
+    if "user" in session and session["user"]["role"] == "admin":
         #validate the info
         #save the new user
         with Session(engine) as conn:
@@ -87,17 +105,19 @@ def addUser():
             conn.commit()
 
             return jsonify({
+                "status":200,
                 "message":"User added",
                 "user": user.serialize()
             })
     else:
         return jsonify({
+            "status": 401,
             "message": "Unauthorized request"
         })
 
 @app.route("/user/<int:id_user>",methods=["PUT"])
 def editUser(id_user):
-    if "user" in session and session["user"].role == "admin":
+    if "user" in session and session["user"]["role"] == "admin":
         #update the user
         with Session(engine) as conn:
 
@@ -115,16 +135,18 @@ def editUser(id_user):
             conn.commit()
 
         return jsonify({
+            "status": 200,
             "message":"User was updated"
         })
     else:
         return jsonify({
+            "status": 401,
             "message": "Unauthorized request"
         })
 
 @app.route("/user/<int:id_user>",methods=["DELETE"])
 def deleteUser(id_user):
-    if "user" in session and session["user"].role == "admin":
+    if "user" in session and session["user"]["role"] == "admin":
         with Session(engine) as conn:
             
             conn.execute(
@@ -135,20 +157,26 @@ def deleteUser(id_user):
             conn.commit()
 
         return jsonify({
+            "status": 200,
             "message":"User was deleted"
         })
     else:
         return jsonify({
+            "status": 401,
             "message": "Unauthorized request"
         })
 
+#----------------------- User ------------------#
+
+
+#---------------------- Publication ------------------#
 
 @app.route("/publications",methods=["GET"])
 def getPublications():
     if "user" in session:
         with Session(engine) as conn:
             publications = conn.execute(
-                select(Publication).where(Publication.id_user == session["user"].id)
+                select(Publication).where(Publication.id_user == session["user"]["id"])
             ).all()
         
         publications = [ list(publication) for publication in publications]
@@ -165,7 +193,7 @@ def getPublication(id_publication):
                 select(Publication).where(Publication.id == id_publication)
             ).fetchone()
 
-            if publication[0].id_user == session["user"].id:
+            if publication[0].id_user == session["user"]["id"]:
                 return jsonify({
                     "publication": publication[0].serialize()
                 })
@@ -173,7 +201,6 @@ def getPublication(id_publication):
                 return jsonify({
                     "message": "Unauthorized request"
                 })
-
 
 @app.route("/publication", methods=["POST"])
 def addPublication():
@@ -188,7 +215,7 @@ def addPublication():
                 status = request.json['status'],
                 published = request.json['published'],
                 created_at = datetime.now(),
-                user_id = session["user"].id
+                user_id = session["user"]["id"]
             )
 
             conn.add(publication)
@@ -218,7 +245,7 @@ def editPublication(id_publication):
                 select(Publication).where(Publication.id == id_publication)
             ).fetchone()
 
-            if publication[0].id_user == session["user"].id:
+            if publication[0].id_user == session["user"]["id"]:
                 conn.execute(
                     update(Publication).
                     where(Publication.id == id_publication ).
@@ -234,9 +261,6 @@ def editPublication(id_publication):
                     "message":"Unauthorized request"
                 })
 
-
-        
-
 @app.route("/publication<int:id_publication>", methods=["DELETE"])
 def deletePublication(id_publication):
 
@@ -246,7 +270,7 @@ def deletePublication(id_publication):
             select(Publication).where(Publication.id == id_publication)
         ).fetchone()
 
-        if publication[0].id_user == session["user"].id:
+        if publication[0].id_user == session["user"]["id"]:
             conn.execute(
                 delete(Publication).
                 where(Publication.id == id_publication)
@@ -262,5 +286,9 @@ def deletePublication(id_publication):
                 "message":"Unauthorized request"
             })
 
+#----------------------- Publication ------------------#
+
+#check if is a principal module
 if __name__ == '__main__':
+    #Start the server
     app.run(debug=True,port=3000)
