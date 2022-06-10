@@ -14,7 +14,7 @@
 #install the following modules
 #pip install flask
 #pip install sqlalchemy
-#pip install flask_bcrypt
+#pip install bcrypt
 #pip install psycopg2
 
 

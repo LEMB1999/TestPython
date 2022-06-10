@@ -31,7 +31,7 @@ class User(Base):
     #we declare the name of the table for this model
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
-    email = Column(String , unique=True)
+    email = Column(String ,unique=True)
     password = Column(String)
     role = Column(String)
     first_name = Column(String)
