@@ -1,0 +1,384 @@
+swagger: "2.0"
+info:
+  description: "This is a documentation of the API_REST"
+  version: '1.1'
+  title: "API REST"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "mendezemmanuel1999@gmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:3000"
+basePath: "/"
+tags:
+- name: "user"
+  description: "Operations about user"
+  externalDocs:
+    description: "Find out more about our store"
+    url: "http://swagger.io"
+- name: "publication"
+  description: "Operations about publication"
+
+schemes:
+- "http"
+paths:
+  /users:
+    get:
+      tags:
+      - "user"
+      summary: "Return a list of user"
+      description: "This can only be done by the logged in admin user."
+      operationId: "getUsers"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Return a list of the users"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/User"
+        "401":
+           description: "Unauthorized request"
+            
+            
+  /user/{id_user}:
+    get:
+      tags:
+      - "user"
+      summary: "Get user by id"
+      description: "This can only be done by the logged in admin user."
+      operationId: "getUserById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id_user"
+        in: "path"
+        description: "The user that needs to be fetched"
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: "get User"
+          schema:
+            $ref: "#/definitions/User"
+        "400":
+          description: "User not Found"
+        "401":
+          description: "Unauthorized request"
+    put:
+      tags:
+      - "user"
+      summary: "Updated user"
+      description: "This can only be done by the logged in user."
+      operationId: "updateUser"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id_user"
+        in: "path"
+        description: "The user that need to be updated"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Updated user object"
+        required: true
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        "200":
+          description: "User was updated"
+          schema: 
+            $ref: "#/definitions/User"
+        "401":
+          description: "Unauthorized request"
+        "404":
+          description: "Invalid input info"
+    delete:
+      tags:
+      - "user"
+      summary: "Delete user"
+      description: "This can only be done by the logged in user."
+      operationId: "deleteUser"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id_user"
+        in: "path"
+        description: "The user that needs to be deleted"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "User was deleted"
+        "401":
+          description: "Unauthorized request"
+        "404":
+          description: "User not found"
+  /user:
+    post:
+      tags:
+      - "user"
+      summary: "Create user"
+      description: "This can only be done by the logged in admin user."
+      operationId: "createUser"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created user object"
+        required: true
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        "200":
+          description: "User added"
+          schema:
+            $ref: "#/definitions/User"
+        "401": 
+          description: "Unauthorized Operation"
+        "404": 
+          description: "Invalid information input"
+  
+  /login:
+    post:
+      tags:
+      - "user"
+      summary: "Logs user into the system"
+      description: ""
+      operationId: "loginUser"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "The user email for login"
+        required: true
+        schema:
+          type: "object"
+          properties:
+            email:
+              type: "string"
+            password:
+              type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "object"
+            properties:
+              status :
+               type : "integer"
+              message:
+                type: "string"
+        "400":
+          description: "The email and password are required"
+        "401":
+          description: "The credentials are incorrect"
+  /logout:
+    delete:
+      tags:
+      - "user"
+      summary: "Logs out current logged in user session"
+      description: ""
+      operationId: "logoutUser"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "object"
+            properties:
+              status: 
+                type: "integer"
+              message:
+                type: "string"
+  
+  /publications:
+    get:
+      tags:
+      - "publication"
+      summary: "Return a list of publication for specific user"
+      description: "This can only be done by the logged in user."
+      operationId: "getPublications"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Return a list of the publications"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Publication"
+        "401":
+          description: "Please login to continue with the process"
+      
+  /publication/{id_publication}:
+    get:
+      tags:
+      - "publication"
+      summary: "Get publication by id"
+      description: "This can only be done by the logged in admin user."
+      operationId: "getPublicationById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id_publication"
+        in: "path"
+        description: "The publication that needs to be fetched"
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: "Return a publication"
+          schema:
+            $ref: "#/definitions/Publication"
+        "400":
+          description: "Invalid input info"
+        "401":
+          description: "Please login to continue with the process"
+    put:
+      tags:
+      - "publication"
+      summary: "Updated publication"
+      description: "This can only be done by the logged in user."
+      operationId: "updatePublication"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id_publication"
+        in: "path"
+        description: "The publication that need to be updated"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Updated publication object"
+        required: true
+        schema:
+          $ref: "#/definitions/Publication"
+      responses:
+        "200":
+          description: "Return a publication with the new values"
+          schema: 
+            $ref: "#/definitions/Publication"
+        "400":
+          description: "Invalid input info"
+        "401":
+          description: "Please login to continue with the process"
+    delete:
+      tags:
+      - "publication"
+      summary: "Delete publication"
+      description: "This can only be done by the logged in user."
+      operationId: "deletePublication"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id_publication"
+        in: "path"
+        description: "The publication that needs to be deleted"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid input info"
+        "401":
+          description: "Please login to continue with the process"
+  /publication:
+    post:
+      tags:
+      - "publication"
+      summary: "Create publication"
+      description: "This can only be done by the logged in"
+      operationId: "createPublication"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created publication object"
+        required: true
+        schema:
+          $ref: "#/definitions/Publication"
+      responses:
+        "200":
+          description: "Return the publication created"
+          schema:
+            $ref: "#/definitions/Publication"
+        "401": 
+          description: "Unauthorized Operation"
+  
+definitions: 
+  Publication:
+    type: "object"
+    properties:
+      title:
+        type: "string"
+      description:
+        type: "string"
+      priority:
+        type: "string"
+        description: "The priority of publication"
+        enum:
+        - "High"
+        - "Medium"
+        - "Low"
+      status:
+        type: "string"
+        description: "The status of publication"
+        enum:
+        - "published"
+        - "pending"
+        - "deleted"
+      published: 
+        type: "string"
+        format: "date-time"
+        description: "The format must be YYYY/MM/DD HH:MM:SS"
+      id_user:
+        type: "integer"
+        format: "int64"
+    xml:
+      name: "Publication"
+  User:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      email:
+        type: "string"
+      password:
+        type: "string"
+      role:
+        type: "string"
+        enum:
+        - "admin"
+        - "general"
+      first_name:
+        type: "string"
+      last_name:
+        type: "string"
+      photo:
+        type: "string"
+    xml:
+      name: "User"
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
+    xml:
+      name: "ApiResponse"
+externalDocs:
+  description: "Find out more about API_REST"
+  url: "https://www.redhat.com/es/topics/api/what-is-a-rest-api"

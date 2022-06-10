@@ -172,6 +172,7 @@ def addUser():
         with Session(engine) as conn:
             user = User(
                 email = request.json["email"],
+                #encrypt and save the password in database
                 password = bcrypt.hashpw(request.json["password"].encode("utf8"),bcrypt.gensalt()).decode("utf8"),
                 first_name = request.json["first_name"],
                 last_name =  request.json["last_name"] if request.json.get("last_name") != None else None,
@@ -223,6 +224,7 @@ def editUser(id_user):
 
         return jsonify({
             "status": 200,
+            "user" : fields,
             "message":"User was updated"
         })
         
@@ -432,6 +434,7 @@ def editPublication(id_publication):
                 conn.commit()
                 return jsonify({
                     "status": 200,
+                    "publication":publication[0].serialize(),
                     "message":"Publication was updated"
                 })
 
