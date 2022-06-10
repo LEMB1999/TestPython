@@ -1,7 +1,7 @@
-#import Environment Variables
 
 import requests
 from sqlalchemy.orm import Session 
+from datetime import datetime
 
 request = requests.Session()
 
@@ -18,174 +18,152 @@ def test_login():
     assert response.json()["status"] == 200
 
 
-#this test check the creation of users
+#this test check the creation of publication
 def test_create_publication():
     data = {
         "title":"Publication 1",
         "description":"This is a test",
-        "priority":"",
-        "status":"",
-        "published":""
+        "priority":"Medium",
+        "status":"published",
+        "published":datetime.now().strftime("%Y-%m-%d  %H:%M:%S"),
     }
     response = request.post("http://localhost:3000/publication", json = data)
     assert response.json()["status"] == 200
 
-#this test check if the user doesnt send a last name
-def test_create_user_without_last_name():
-    data = {
-        "email":"angel2@gmail.com",
-        "password":"12345678",
-        "first_name":"angel",
-        "role":"admin",
-        "photo":"http://foto.com"
-    }
-    response = request.post("http://localhost:3000/user", json = data)
-    assert response.json()["status"] == 200
 
-#this test check if the user doesnt send a photo
-def test_create_user_without_photo():
+#this test check if the user doesnt send a title
+def test_create_user_without_title():
     data = {
-        "email":"angel3@gmail.com",
-        "password":"12345678",
-        "first_name":"angel",
-        "last_name":"arce",
-        "role":"admin",
+        "description":"This is a test",
+        "priority":"Medium",
+        "status":"published",
+        "published":datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
     }
-    response = request.post("http://localhost:3000/user", json = data)
-    assert response.json()["status"] == 200
-
-#this test check if the user doesnt a last name and photo
-def test_create_user_without_last_name_and_photo():
-    data = {
-        "email":"angel4@gmail.com",
-        "password":"12345678",
-        "first_name":"angel",
-        "role":"admin",
-    }
-    response = request.post("http://localhost:3000/user", json = data)
-    assert response.json()["status"] == 200
-
-#this test check when user doesnt send a required param
-def test_create_user_without_email():
-    data = {
-        "password":"12345678",
-        "first_name":"angel",
-        "role":"admin",
-    }
-
-    response = request.post("http://localhost:3000/user", json = data)
+    response = request.post("http://localhost:3000/publication", json = data)
     assert response.json()["status"] == 400
-    assert response.json()["message"] == "The params email,password,fist_name and role are required"
+    assert response.json()["message"] == "The param title is required"
+
+#this test check if the user  send a incorrect status
+def test_create_publication_with_incorrect_status():
+    data = {
+       "title":"Publication 2",
+       "description":"This is a test",
+       "priority":"Medium",
+       "status":"unknown status",
+       "published":datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
+    }
+    status = [ "published", "pending", "deleted" ]
+    response = request.post("http://localhost:3000/publication", json = data)
+    assert response.json()["status"] == 400
+    assert response.json()["message"] == "The values allowed for status are {0}".format(status)
+
+#this test check if the user send a incorrect priority
+def test_create_publication_with_incorrect_priority():
+    data = {
+       "title":"Publication 3",
+       "description":"This is a test",
+       "priority":"unknown priority",
+       "status":"published",
+       "published":datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
+    }
+    
+    priority = [ "High", "Medium", "Low" ]
+    response = request.post("http://localhost:3000/publication", json = data)
+    assert response.json()["status"] == 400
+    assert response.json()["message"] == "The values allowed for priority are {0}".format(priority)
+
 
 #this test check if user send a request and doesnt authenticated
-def test_create_user_without_credentials():
+def test_create_publication_without_credentials():
     data = {
-        "email":"angel@gmail.com",
-        "password":"12345678",
-        "first_name":"angel",
-        "role":"admin",
+        "title":"Publication 1",
+        "description":"This is a test",
+        "priority":"Medium",
+        "status":"published",
+        "published":datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
     }
-    response = requests.post("http://localhost:3000/user", json = data)
+    response = requests.post("http://localhost:3000/publication", json = data)
     assert response.json()["status"] == 401
+    assert response.json()["message"] == "Please login to continue with the process"
 
 
-
-#this test check the fetch of all users
-def test_get_users():
-    response = request.get("http://localhost:3000/users")
+#this test check the fetch of all publications
+def test_get_publications():
+    response = request.get("http://localhost:3000/publications")
     assert response.json()["status"] == 200
 
-#this test check if user send request to get user without credentials
-def test_get_users_without_credentials():
-    response = requests.get("http://localhost:3000/users")
+
+#this test check if user send request to get publication without credentials
+def test_get_publications_without_credentials():
+    response = requests.get("http://localhost:3000/publications")
     assert response.json()["status"] == 401
-    assert response.json()["message"] == "Unauthorized request"
-    
+    assert response.json()["message"] == "Please login to continue with the process"
 
-
-#this test check fetch specific user
-def test_get_user():
-    response = request.get("http://localhost:3000/user/{0}".format(2))
+#this test check fetch specific publication
+def test_get_publication():
+    response = request.get("http://localhost:3000/publication/{0}".format(1))
     assert response.json()["status"] == 200
 
-#this test check fetch specific user and not found
-def test_get_user_not_found():
-    response = request.get("http://localhost:3000/user/{0}".format(100))
+#this test check fetch specific publication and not found
+def test_get_publication_not_found():
+    response = request.get("http://localhost:3000/publication/{0}".format(100))
     assert response.json()["status"] == 400
-    assert response.json()["message"] == "User not Found"
+    assert response.json()["message"] == "Publication not Found"
 
-#this test check fetch specific user without credentials
-def test_get_user_without_credentials():
-    response = requests.get("http://localhost:3000/user/{0}".format(2))
+#this test check fetch specific publication without credentials
+def test_get_publication_without_credentials():
+    response = requests.get("http://localhost:3000/publication/{0}".format(1))
     assert response.json()["status"] == 401
-    assert response.json()["message"] == "Unauthorized request"
+    assert response.json()["message"] == "Please login to continue with the process"
     
-
-def test_update_user():
+#this test validate the updated of the publication
+def test_update_publication():
     data = {
-        "email":"angel_1_updated@gmail.com",
-        "password":"12345678",
-        "first_name":"angel",
-        "last_name":"arce",
-        "role":"admin",
-        "photo":"http://foto.com"
+        "title":"Publication updated",
+        "description":"This is a test",
+        "priority":"Medium",
+        "status":"published",
+        "published":datetime.now().strftime("%Y-%m-%d  %H:%M:%S"),
     }
-    response = request.put("http://localhost:3000/user/{0}".format(2), json = data)
+    response = request.put("http://localhost:3000/publication/{0}".format(1), json = data)
     assert response.json()["status"] == 200
 
-def test_update_user():
+#this test validate when user not send a required params to update  a publication
+def test_update_publication():
+    
     data = {
-        "password":"12345678",
-        "first_name":"angel",
-        "last_name":"arce",
-        "role":"admin",
-        "photo":"http://foto.com"
+        "description":"This is a test",
+        "priority":"Medium",
+        "status":"published",
+        "published":datetime.now().strftime("%Y-%m-%d  %H:%M:%S"),
     }
-    response = request.put("http://localhost:3000/user/{0}".format(2), json = data)
-    assert response.json()["status"] == 400
-    assert response.json()["message"] == "The params email,password,fist_name and role are required"
 
+    response = request.put("http://localhost:3000/publication/{0}".format(2), json = data)
+    assert response.json()["status"] == 400
+    assert response.json()["message"] == "The param title is required"
+
+#this  test validate when user try to update a publication but is not loggin
 def test_update_user_without_credentials():
     data = {
-        "email":"angel_updated@gmail.com",
-        "password":"12345678",
-        "first_name":"angel",
-        "last_name":"arce",
-        "role":"admin",
-        "photo":"http://foto.com"
+        "title":"Publication 10",
+        "description":"This is a test",
+        "priority":"Medium",
+        "status":"published",
+        "published":datetime.now().strftime("%Y-%m-%d  %H:%M:%S"),
     }
-    response = requests.put("http://localhost:3000/user/{0}".format(2), json = data)
+    response = requests.put("http://localhost:3000/publication/{0}".format(1), json = data)
     assert response.json()["status"] == 401
-    assert response.json()["message"] == "Unauthorized request"
+    assert response.json()["message"] == "Please login to continue with the process"
 
-def test_delete_user():
-    response = request.delete("http://localhost:3000/user/{0}".format(2))
-    assert response.json()["status"] == 200
-    assert response.json()["message"] == "User was deleted"
-
-def test_delete_user_without_credentials():
-    response = requests.delete("http://localhost:3000/user/{0}".format(3))
-    assert response.json()["status"] == 401
-    assert response.json()["message"] == "Unauthorized request"
-
-def logout():
-    response = request.delete("http://localhost:3000/logout")
-    assert response.json()["status"] == 200
-
-
-
-
-def test_get_publications():
-    pass
-
-def test_get_publication():
-    pass 
-
-def test_create_publication():
-    pass
-
+#this test validate when user try to delete a some publication
 def test_delete_publication():
-    pass 
+    response = request.delete("http://localhost:3000/publication/{0}".format(1))
+    assert response.json()["status"] == 200
+    assert response.json()["message"] == "Publication was deleted"
 
-def test_update_publication():
-    pass
+#this test validate when user try to delete a some publication but is not loggin
+def test_delete_publication_without_credentials():
+    response = requests.delete("http://localhost:3000/publication/{0}".format(2))
+    assert response.json()["status"] == 401
+    assert response.json()["message"] == "Please login to continue with the process"
+

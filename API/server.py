@@ -225,6 +225,7 @@ def editUser(id_user):
             "status": 200,
             "message":"User was updated"
         })
+        
     else:
         return jsonify({
             "status": 401,
@@ -267,23 +268,32 @@ def getPublications():
         with Session(engine) as conn:
             #get the publication of the user 
             publications = conn.execute(
-                select(Publication).where(Publication.id_user == session["user"]["id"])
+                select(Publication).where(Publication.id_user == session["user"]["id_user"])
             ).all()
+
+            if len(publications) > 0:
+                publications = [ publication[0].serialize() for publication in publications]
         
-        publications = [ list(publication) for publication in publications]
 
-    return jsonify({
-        "publications":publications
-    })
+            return jsonify({
+                "status": 200,
+                "publications":publications
+            })
+    else:
+        return jsonify({
+            "status": 401,
+            "message": "Please login to continue with the process"
+        })
 
-@app.route("/publication<int:id_publication>",methods=["GET"])
+
+@app.route("/publication/<int:id_publication>",methods=["GET"])
 def getPublication(id_publication):
     if "user" in session:
         if not isinstance(id_publication,int):
             return jsonify({
                 "status":400,
                 "message":"The id publication must be a integer"
-            })
+        })
 
         with Session(engine) as conn:
             #get a specific publication
@@ -291,15 +301,30 @@ def getPublication(id_publication):
                 select(Publication).where(Publication.id == id_publication)
             ).fetchone()
 
-            #validate that user has a permissions to see the publication
-            if publication[0].id_user == session["user"]["id"]:
+            if publication == None:
                 return jsonify({
+                    "status": 400,
+                    "message": "Publication not Found"
+            })
+                
+
+            #validate that user has a permissions to see the publication
+            if publication[0].id_user == session["user"]["id_user"]:
+                return jsonify({
+                    "status": 200,
                     "publication": publication[0].serialize()
                 })
             else:
-                return jsonify({
-                    "message": "Unauthorized request"
+                 return jsonify({
+                    "status": 400,
+                    "publication": "Unauthorized request"
                 })
+
+    else:
+        return jsonify({
+            "status": 401,
+            "message": "Please login to continue with the process"
+        })
 
 @app.route("/publication", methods=["POST"])
 def addPublication():
@@ -310,22 +335,29 @@ def addPublication():
 
         #validate request
         allow_fields = ["title","description","priority","status","published"]
-        required_params = ["title","description","status"]
+        required_params = ["title","description","priority","status"]
         result = checkRequest(request.json,allow_fields,required_params)
         if( result["passValidation"] != True):
             return jsonify(result["info"])
 
-        status = []
-        priority = []
+        status = [ "published", "pending", "deleted" ]
+        priority = [ "High", "Medium", "Low" ]
 
+        #validate priorities
         if not request.json["priority"] in priority:
-            pass
+            return jsonify({
+                "status":400,
+                "message":"The values allowed for priority are {0}".format(priority)
+            })
 
+        #validate status
         if not request.json["status"] in status:
-            pass
+            return jsonify({
+                "status":400,
+                "message":"The values allowed for status are {0}".format(status)
+            })
 
         with Session(engine) as conn:
-
             publication = Publication(
                 title = request.json['title'],
                 description = request.json['description'],
@@ -333,19 +365,23 @@ def addPublication():
                 status = request.json['status'] ,
                 published = request.json['published'] if request.json.get("published") != None else None,
                 created_at = datetime.now(),
-                user_id = session["user"]["id"]
+                id_user = session["user"]["id_user"]
             )
 
             #we save publication in database
             conn.add(publication)
             conn.commit()
 
-        return jsonify({
-            "message":"Publication added",
-            "publication": publication.serialize()
-        })
+            print()
+
+            return jsonify({
+                "status":200,
+                "message":"Publication added",
+                "publication":publication.serialize()
+            })
     else:
         return jsonify({
+            "status": 401,
             "message":"Please login to continue with the process",
         })
 
@@ -360,9 +396,8 @@ def editPublication(id_publication):
             return jsonify({
                 "status":400,
                 "message":"The id publication must be a integer"
-            })
+        })
 
-        
         #validate request
         allow_fields = ["title","description","priority","status","published"]
         required_params = ["title","description","status"]
@@ -376,13 +411,17 @@ def editPublication(id_publication):
             #generate the object to save in db
             for field in request.json:
                 fields[field] = request.json[field]
+            
+            #save when updated the publication
+            fields["updated_at"] = datetime.now()
 
+            #save changes in database
             publication = conn.execute(
                 select(Publication).where(Publication.id == id_publication)
             ).fetchone()
 
             #validate if user its owner of publication
-            if publication[0].id_user == session["user"]["id"]:
+            if publication[0].id_user == session["user"]["id_user"]:
                 #update publication
                 conn.execute(
                     update(Publication).
@@ -392,14 +431,23 @@ def editPublication(id_publication):
             
                 conn.commit()
                 return jsonify({
+                    "status": 200,
                     "message":"Publication was updated"
                 })
+
             else:
                 return jsonify({
+                    "status": 400,
                     "message":"Unauthorized request"
                 })
+                
+    else:
+        return jsonify({
+            "status":401,
+            "message":"Please login to continue with the process"
+        })
 
-@app.route("/publication<int:id_publication>", methods=["DELETE"])
+@app.route("/publication/<int:id_publication>", methods=["DELETE"])
 def deletePublication(id_publication):
     
      
@@ -417,6 +465,7 @@ def deletePublication(id_publication):
                 select(Publication).where(Publication.id == id_publication)
             ).fetchone()
 
+            print(publication)
             #check if exist the publication
             if publication == None:
                 return jsonify({
@@ -425,7 +474,7 @@ def deletePublication(id_publication):
                 })
 
             #check if the user is the owner of the publication
-            if publication[0].id_user == session["user"]["id"]:
+            if publication[0].id_user == session["user"]["id_user"]:
                 conn.execute(
                     delete(Publication).
                     where(Publication.id == id_publication)
@@ -434,12 +483,21 @@ def deletePublication(id_publication):
                 conn.commit()
 
                 return jsonify({
-                    "message":"The publication was deleted"
+                    "status": 200,
+                    "message":"Publication was deleted"
                 })
+
             else:
                 return jsonify({
+                    "status": 400,
                     "message":"Unauthorized request"
                 })
+
+    else:
+        return jsonify({
+            "status":401,
+            "message":"Please login to continue with the process"
+        })
 
 #----------------------- Publication ------------------#
 

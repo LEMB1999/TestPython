@@ -202,6 +202,7 @@ def test_update_user():
     response = request.put("http://localhost:3000/user/{0}".format(2), json = data)
     assert response.json()["status"] == 200
 
+#this test validate the updated of the user 
 def test_update_user():
     data = {
         "password":"12345678",
@@ -228,6 +229,7 @@ def test_udpate_user_params_type():
     assert response.json()["status"] == 400 
     assert response.json()["message"] == "The param photo its must be string"
 
+#validate if user try update user with credentials
 def test_update_user_without_credentials():
     data = {
         "email":"angel_updated@gmail.com",
@@ -241,16 +243,19 @@ def test_update_user_without_credentials():
     assert response.json()["status"] == 401
     assert response.json()["message"] == "Unauthorized request"
 
+#this test checks deletion of the user
 def test_delete_user():
     response = request.delete("http://localhost:3000/user/{0}".format(2))
     assert response.json()["status"] == 200
     assert response.json()["message"] == "User was deleted"
 
+#this test checks deletion of the user without credentials
 def test_delete_user_without_credentials():
     response = requests.delete("http://localhost:3000/user/{0}".format(3))
     assert response.json()["status"] == 401
     assert response.json()["message"] == "Unauthorized request"
 
+#this test validate the logout of the user
 def logout():
     response = request.delete("http://localhost:3000/logout")
     assert response.json()["status"] == 200

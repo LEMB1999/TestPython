@@ -1,0 +1,21 @@
+Instructions:
+1. Create a Rest API, which allows authorized users to manage their own
+Publications (filtering by current user): Create, Read, Update and Delete
+2. Create the unit tests to check the correct functioning of the methods offered by
+the API
+3. Document the API using a Swagger-like tool.
+4. Publish the code to a public repository. For review and evaluation.
+5. Please make installation and running instructions in the README.md.
+It should include:
+● User authentication mechanism (login, logout).
+● User management CRUD (fields: email, password, fullname, photo).
+● Persistence of data in a Relational database (Postgres is preferred).
+● Publication management CRUD (fields: title, description, priority, status, time
+since it has been published (seconds, minutes, hours, days, etc.), user,
+created_at, updated_at) and view details of a publication.
+● Units tests must be created with Pytest
+● The API must be built with Flask
+● Must document every method and class created
+● Must create a README file with instructions to execute your API
+● The API should be testable with Swagger.
+● The source code must have the requirements.txt file
