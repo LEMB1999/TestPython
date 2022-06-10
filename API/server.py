@@ -374,7 +374,6 @@ def addPublication():
             conn.add(publication)
             conn.commit()
 
-            print()
 
             return jsonify({
                 "status":200,
@@ -468,7 +467,6 @@ def deletePublication(id_publication):
                 select(Publication).where(Publication.id == id_publication)
             ).fetchone()
 
-            print(publication)
             #check if exist the publication
             if publication == None:
                 return jsonify({
